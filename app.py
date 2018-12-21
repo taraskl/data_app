@@ -1,35 +1,52 @@
 from flask import Flask, render_template
-
-import sqlite3
 from flask import g
+import sqlite3
+import codecs
+import csv
 
-DATABASE = 'example.db'
+
+DATABASE = 'data.sqlite3.db'
 
 app = Flask(__name__)
 
 def get_db():
-    db = getattr(g, '_example', None)
+    db = getattr(g, '_data.sqlite3', None)
     if db is None:
         db = g._database = sqlite3.connect(DATABASE)
     return db
 
-
-
 @app.route('/')
-def hello_world():
+def twst():
     cur = get_db().execute("SELECT value FROM data")
     value = cur.fetchall()
     cur.close()
-    list_value = [i[0] for i in value]
-    print(list_value)
+    list_of_value = [i[0] for i in value]
+    # remove not float value from list
+    for i in list_of_value:
+        if type(i) is not float:
+            list_of_value.remove(i)
 
-    data = [
-    {'Date': "1", 'High': 18.79, 'Low': 17.78, 'Close': 18.37},
-    {'Date': "2", 'High': 17.76, 'Low': 17.27, 'Close': 17.48},
-    {'Date': "3", 'High': 18.62, 'Low': 18.05, 'Close': 18.13},
-    {'Date': "June 30, 2015 00:00:05", 'High': 20.4, 'Low': 19.37, 'Close': 20.33}
-    ]
-    return render_template("index.html", data=data) 
+    max_list_value = (max(list_of_value))
+    int_max_list_value = int(max_list_value)+2
+
+    # make a dictionary with data
+    data=[]
+    maxcounter = 0
+    for i in range(int_max_list_value):
+        counter = 0
+        for value in list_of_value:
+            if value >=i and value <i+1:
+                counter +=1
+    # print("counter", counter)
+        d={'x':'','y':''}
+        d['x'] = i
+        d['y'] = counter
+        data.append(d)
+    # find a maxcounte
+        if counter > maxcounter:
+            maxcounter = counter   
+        
+    return render_template("test.html", data=data, xrange=int_max_list_value, yrange=maxcounter) 
 
 @app.teardown_appcontext
 def close_connection(exception):

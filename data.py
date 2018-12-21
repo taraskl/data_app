@@ -3,12 +3,16 @@ import codecs
 import csv
 
 import sqlite3
+import os
 
-conn = sqlite3.connect('example.db')
+conn = sqlite3.connect('data.sqlite3.db')
 c = conn.cursor()
 
 # Delete table
-# c.execute("DROP TABLE data")
+try:
+    c.execute("DROP TABLE data")
+except:
+    pass
 
 # Check, create table
 try:
@@ -20,64 +24,61 @@ except:
     print('Data table was created')
 
 
+#WRITE YOUR DIRECTORY OF DATA
+path = '/home/taras/work/ActiveWizards/data_app/data'
 
-FILENAME = "data/test-1.csv"
+for FILENAME in os.listdir(path):
 
-ENCODING = 'cp437'
-with codecs.open(FILENAME, "r", ENCODING) as fp:
-    reader = csv.reader(fp)
-    headers = next(reader)
-    s=headers[0][9:]
-
-if s == 'cp437':
     ENCODING = 'cp437'
-    with codecs.open(FILENAME, "r", ENCODING) as fp:
+    with codecs.open(f"data/{FILENAME}", "r", ENCODING) as fp:
         reader = csv.reader(fp)
-
-    #     # read CSV headers
         headers = next(reader)
-        print(headers)
+        s=headers[0][9:]
 
-        # # read rest of file
-        for row in reader:
-            # Print each row
-            print(row[0], row[1], row[2])
-            c.execute("INSERT INTO data VALUES (?, ?, ?)", (row[0], row[1], row[2]))
-            conn.commit()
+    if s == 'cp437':
+        ENCODING = 'cp437'
+        with codecs.open(f"data/{FILENAME}", "r", ENCODING) as fp:
+            reader = csv.reader(fp)
+        #     # read CSV headers
+            try:
+                headers = next(reader)
+                # # read rest of file
+                for row in reader:
+                    # Print each row
+                    c.execute("INSERT INTO data VALUES (?, ?, ?)", (row[0], row[1], row[2]))
+                    conn.commit()
+            except:
+                print(f"Was error in file {FILENAME}") 
 
-        #     # Print individual fields of the row
-        #     # print("{},{},{},{} = {}".format(row[0],row[1],row[2],row[3],row[4]))
+    elif s == 'utf-8':
+        ENCODING = 'utf-8'
+        with codecs.open(f"data/{FILENAME}", "r", ENCODING) as fp:
+            reader = csv.reader(fp)
+        #     # read CSV headers
+            try:
+                headers = next(reader)
+            # # read rest of file
+                for row in reader:
+                    # Print each row
+                    c.execute("INSERT INTO data VALUES (?, ?, ?)", (row[0], row[1], row[2]))
+                    conn.commit()
+            except:
+                print(f"Was error in file {FILENAME}")    
+     
 
-elif s == 'utf-8':
-    ENCODING = 'utf-8'
-    with codecs.open(FILENAME, "r", ENCODING) as fp:
-        reader = csv.reader(fp)
-
-    #     # read CSV headers
-        headers = next(reader)
-        print(headers)
-
-        # # read rest of file
-        for row in reader:
-            # Print each row
-            print(row[0], row[1], row[2])
-            c.execute("INSERT INTO data VALUES (?, ?, ?)", (row[0], row[1], row[2]))
-            conn.commit()
-
-elif s == 'ascii':
-    ENCODING = 'ascii'
-    with codecs.open(FILENAME, "r", ENCODING) as fp:
-        reader = csv.reader(fp)
-
-    #     # read CSV headers
-        headers = next(reader)
-        print(headers)
-
-        # # read rest of file
-        for row in reader:
-            # Print each row
-            print(row[0], row[1], row[2])
-            c.execute("INSERT INTO data VALUES (?, ?, ?)", (row[0], row[1], row[2]))
-            conn.commit() 
+    elif s == 'ascii':
+        ENCODING = 'ascii'
+        with codecs.open(f"data/{FILENAME}", "r", ENCODING) as fp:
+            reader = csv.reader(fp)
+        #     # read CSV headers
+            try:
+                headers = next(reader)
+                # # read rest of file
+                for row in reader:
+                    # Print each row
+                    c.execute("INSERT INTO data VALUES (?, ?, ?)", (row[0], row[1], row[2]))
+                    conn.commit() 
+            except:
+                print(f"Was error in file {FILENAME}") 
 
 conn.close()
